@@ -59,7 +59,7 @@ python visualization.py
 
 ## 3. 학습자료 생성 프로세스
 
-**modules**
+**modules**    
 └── **json_preprocess.py**
 
 **Json parsing:**
@@ -87,13 +87,13 @@ python visualization.py
 
 ## 4. 모델학습 프로세스
 
-**modules**
-├── **preprocess.py**
-└── **lstm_model.py**
-
-
-
-**Model-learning**:
+**modules**    
+├── **preprocess.py**    
+└── **lstm_model.py**    
+    
+    
+    
+**Model-learning**:    
 - npy 폴더 위치 지정
 - 데이터 로드
 - labels 재지정
@@ -108,6 +108,6 @@ python visualization.py
 
 ## 5. 시각화 프로세스
 
-**modules**
-├── **extract_landmarks.py**
-└── **visual_result.py**
+**modules**    
+├── **extract_landmarks.py**    
+└── **visual_result.py**    
