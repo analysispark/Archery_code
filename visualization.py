@@ -11,7 +11,6 @@ Supervised: Jihoon, Park
 import os
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from modules import json_preprocess as jp
