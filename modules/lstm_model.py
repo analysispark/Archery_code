@@ -3,7 +3,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 
-def park_LSTM(x_train, y_train, x_test, y_test, batch_size=1, max_frame=900, num_keypoints=6, epoch=20):
+def park_LSTM(x_train, y_train, x_test, y_test, batch_size=1, max_frame=900, num_keypoints=6, epoch=30):
     num_classes = y_train.shape[1]
 
     model = keras.Sequential([

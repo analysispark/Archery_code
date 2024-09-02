@@ -2,15 +2,15 @@
 
 ## 프로젝트 개요
 
-국가대표 양궁선수들의 슈팅영상에서 HPE(Human Pose Estimation)를 이용하여 관절포인트를 추출하고 동작의 일관성을 판단하는 모델 생성
+국가대표 양궁선수들의 슈팅영상에서 HPE(Human Pose Estimation)를 이용하여 관절포인트를 추출하고 동작의 일관성을 판단하는 모델 생성    
 구체적으로 **(1)관절포인트를 추출한 Json 파일을 학습모델 자료로 생성**하는 모듈과   
-**(2)생성된 학습 자료세트를 활용하여 양궁선수 슈팅동작의 일관성을 판단하는 모델** 생성
+**(2)생성된 학습 자료세트를 활용하여 양궁선수 슈팅동작의 일관성을 판단하는 모델** 생성    
   
   
-**1차년도 :** 선수들의 **슈팅동작을 모델이 판단**하여 **어떤 선수의 슈팅**인지 예측하는 모델
-**2차년도 :** **선수 개인의 슈팅동작** 중 **일관성 정도(안정 동작)를 예측**하는 모델
-
-
+**1차년도 :** 선수들의 **슈팅동작을 모델이 판단**하여 **어떤 선수의 슈팅**인지 예측하는 모델    
+**2차년도 :** **선수 개인의 슈팅동작** 중 **일관성 정도(안정 동작)를 예측**하는 모델    
+    
+    
 ## Contents
 
 1. [설치](#설치)
@@ -24,10 +24,9 @@
 ## 1. 설치
 
 #### 요구 사양
-\# 수정 필요
-1. tensorflow GPU
-2. keras
-3. --
+1. CUDA (optional)
+2. tensorflow 
+3. python3
 
 #### Linux & WSL2
 
@@ -35,6 +34,7 @@
 git clone https://github.com/analysispark/Project_Archery.git
 cd Project_Archery
 pip install -r requirements.txt
+sh get_DATA.sh
 ```
 
 
@@ -54,7 +54,7 @@ python model_learning.py
 
 **< 시각화 >**
 ```bash
-python visualization.py
+python visualization.py {video_file_name}
 ```
 
 ## 3. 학습자료 생성 프로세스
@@ -101,13 +101,18 @@ python visualization.py
 - 학습 & 테스트 셋 분리
 - y_train 데이터 길이 확인
 - 모델 학습
-  - batch_size = 32
+  - batch_size = 1
   - max_frame = 900
   - num_keypoints = 6
   - epoch = 30 
+  - learning_late = 0.001
+  - loss = categorical_crossentropy
+- 학습모델 저장 
+    
 
 ## 5. 시각화 프로세스
 
 **modules**    
 ├── **extract_landmarks.py**    
-└── **visual_result.py**    
+├── **preprocess.py**    
+└── **json_preprocess.py**    
