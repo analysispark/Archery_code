@@ -19,7 +19,9 @@ from modules import preprocess as pre
 
 current_dir = os.getcwd()
 
+# 전처리 된 npy 파일 저장경로
 npy_directory = os.path.join(current_dir, "sample")
+
 
 x_train = pre.npy_loads(npy_directory, "x_train")
 y_train = pre.npy_loads(npy_directory, "y_train")
@@ -27,7 +29,7 @@ y_train = pre.npy_loads(npy_directory, "y_train")
 print(f"x_train sample: {len(x_train)}")
 print(f"y_train sample: {len(y_train)}")
 
-
+# 선수 코드명을 #### 여기부터 다시 시작해야 함 10-16
 old_labels = [18, 20, 23, 24, 27, 28, 29, 30, 31, 32, 38, 41]
 new_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
