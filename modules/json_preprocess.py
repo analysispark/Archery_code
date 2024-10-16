@@ -8,6 +8,31 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 
+def convert_keypoints(keypoints):
+    if isinstance(keypoints[0][0][0], list):
+        return keypoints
+    else:
+        print("데이터구조 변환")
+        return [[keypoint] for keypoint in keypoints]
+
+def dimensional_check(json_path):
+    try:
+        if not os.path.exists(json_path):
+            print(f"File {json_path} does not exist.")
+            return  
+
+        with open(json_path, "r") as f:
+            data = json.load(f)
+
+                data["annotation"]["2d_keypoints"] = convert_keypoints(
+                    data["annotation"]["2d_keypoints"]
+                )
+            with open(json_path, "w") as f_out:
+                    json.dump(data, f_out, indent=4)
+
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+
 def get_folder_list(directory):
     # 디렉토리 내 항목 목록 가져오기
     items = os.listdir(directory)
