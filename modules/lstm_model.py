@@ -8,6 +8,9 @@ from sklearn_metrics import classfication_report, confusion_matrix
 from tensorflow import keras
 from tensorflow.keras import layers
 
+"""
+양방향 LSTM 모델 구성
+"""
 
 def park_LSTM(
     x_train,
@@ -86,7 +89,7 @@ def park_LSTM(
 
     return history, test_loss, test_acc
 
-
+# 사용안함(결과보고서 및 논문에서 모델 정확도를 위한 그래프)
 def make_plot(history):
     plt.style.use("fivethirtyeight")
 

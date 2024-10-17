@@ -7,7 +7,11 @@ import re
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
+"""
+원본 json으로 부터 데이터구조 변환 및 표준화 전처리 코드 모음
+"""
 
+# json 구조 변환하는 코드
 def convert_keypoints(keypoints):
     if isinstance(keypoints[0][0][0], list):
         return keypoints
@@ -15,6 +19,7 @@ def convert_keypoints(keypoints):
         print("데이터구조 변환")
         return [[keypoint] for keypoint in keypoints]
 
+# json 구조 확인 및 변환파일 저장코드
 def dimensional_check(json_path):
     try:
         if not os.path.exists(json_path):
@@ -33,6 +38,7 @@ def dimensional_check(json_path):
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
 
+# 폴더 내 항목 리스트 담는 코드
 def get_folder_list(directory):
     # 디렉토리 내 항목 목록 가져오기
     items = os.listdir(directory)
@@ -45,9 +51,9 @@ def get_folder_list(directory):
     print(folders)
     return folders
 
-
+# 단일 json 파일로 부터 프레임 길이 계산 (영상 편집을 하였기 때문에 실제 프레임 계산 필요)
 def find_max_frame(json_path):
-    # 단일 json 파일로 부터 프레임 길이 계산 (영상 편집을 하였기 때문에 실제 프레임 계산 필요)
+
     max_frame = -1  # 최대값을 초기화합니다.
 
     for json_file in json_path:
@@ -64,8 +70,8 @@ def find_max_frame(json_path):
     return max_frame
 
 
+# 여러 json 파일로부터 프레임 최대값 탐색
 def json_max_frame(json_path):
-    # 여러 json 파일로부터 프레임 최대값 탐색
     # 임시 파일은 예외 처리
     if os.path.basename(json_path).startswith("._"):
         print(f"Skipping temporary file: {json_path}")
@@ -83,6 +89,7 @@ def json_max_frame(json_path):
     return max_frame
 
 
+# 폴더 내에서 json 파일 탐색 코드
 def search_json_files(directory, frame):
     json_files = []  # JSON 파일을 저장할 리스트
 
@@ -106,8 +113,8 @@ def search_json_files(directory, frame):
     return json_files
 
 
+# 현재는 score가 없으므로 선수명 코드 추출
 def extract_number_from_filename(filename):
-    # 현재는 score가 없으므로 선수명 코드 추출
     pattern = r"^(\d{2})_"
     match = re.match(pattern, filename)
     if match:
@@ -116,13 +123,14 @@ def extract_number_from_filename(filename):
         return None
 
 
+# 현재는 score가 없으므로 선수명 코드 추출
 def gen_y_train(json_files):
-    # 현재는 score가 없으므로 선수명 코드 추출
     filename = os.path.basename(json_files)
     label = extract_number_from_filename(filename)
     return label
 
 
+# 원본 json 파일을 학습할 수 있도록 표준화 및 행열변환 코드
 def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
     output_json = []
 
@@ -161,7 +169,7 @@ def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
     # 데이터를 (None, 2 * num_keypoints) 형태로 변환
     output_json = np.array(output_json)
 
-    # MinMaxScaler를 사용하여 데이터를 정규화합니다.
+    # MinMaxScaler를 사용하여 데이터를 정규화
     scaler = MinMaxScaler()
     output_json_reshaped = output_json.reshape(-1, num_keypoints * 2)
     output_json_normalized = scaler.fit_transform(output_json_reshaped)
@@ -183,6 +191,7 @@ def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
     return output_json_normalized
 
 
+# 원본 json 파일들을 리스트에 담고, 정규화&전처리 실행 및 npy 변환하여 저장한는 실행코드
 def process_files_in_folder(current_dir, folder_list, max_frame, Output_path):
     for i in folder_list:
         json_files = search_json_files(os.path.join(current_dir, "DATA/Json", i), 900)

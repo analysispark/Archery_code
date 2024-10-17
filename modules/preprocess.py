@@ -7,7 +7,12 @@ import cv2
 import numpy as np
 from tensorflow.keras.utils import to_categorical
 
+"""
+사전에 전처리된 json 파일들을 대상으로  
+모델 학습 및 시각화를 위한 전처리 코드
+"""
 
+# npy 파일 불러오는 함수
 def npy_loads(target_directory, prefix):
     npy_files = []
 
@@ -31,12 +36,12 @@ def npy_loads(target_directory, prefix):
     else:
         return np.array([])
 
-
+# 정수값을 원-핫 인코딩 하는 함수
 def one_hot_encode_labels(labels, num_classes):
     labels_array = np.array(labels)  # 정수 리스트를 numpy 배열로 변환
     return to_categorical(labels_array, num_classes=num_classes)
 
-
+# 여러 영상 동일 프레임 관절포인트 평균 계산
 def calculate_mean_coordinates(x_train):
     return np.mean(x_train, axis=0)
 
@@ -48,7 +53,7 @@ def calculate_coordinate_differences(sample_data, mean_coordinates):
     return differences_ratio
 
 
-# 2D 키포인트 데이터를 JSON에서 로드
+# 2D 키포인트 데이터를 JSON에서 로드 (시각화 위치좌표를 위한 원본 json파일 좌표값 불러오기)
 def load_2d_keypoints(json_path):
     with open(json_path, "r") as f:
         data = json.load(f)
@@ -66,7 +71,7 @@ def get_color_by_ratio(ratio):
         return (0, 0, 255)  # 빨간색
 
 
-# 동영상 처리
+# 시각화 동영상 처리
 def process_video(
     video_path, output_path, json_keypoints, mean_coordinates, sample_coordinates
 ):

@@ -20,7 +20,8 @@ from modules import preprocess as pre
 current_dir = os.getcwd()
 
 # 전처리 된 npy 파일 저장경로
-npy_directory = os.path.join(current_dir, "sample")
+npy_directory = os.path.join(current_dir, "sample") # 현재는 sample 로 시뮬레이션
+#npy_directory = os.path.join(current_dir, "DATA")
 
 # 학습자료 불러오기
 x_train = pre.npy_loads(npy_directory, "x_train")
@@ -33,7 +34,7 @@ print(f"y_train sample: {len(y_train)}")
 # old_labels = [18, 20, 23, 24, 27, 28, 29, 30, 31, 32, 38, 41]
 # new_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-# 점수 변경
+# 점수 변경(2차 년도)
 old_labels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 new_labels = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
