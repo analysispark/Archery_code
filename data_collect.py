@@ -29,8 +29,8 @@ json 파일자료 저장경로의 형태가 "DATA" 폴더안에 각 선수코드
         DATA/npy/49_y_train.npy
 """
 # Json 파일위치 경로
-json_path = os.path.join(current_dir, "DATA")  # 전체 선수들 json 원본 저장 경로
-Output_path = os.path.join(current_dir, "DATA/npy")  # 전처리 완료된 npy 파일 저장 경로
+json_path = os.path.join(current_dir, "sample")  # 전체 선수들 json 원본 저장 경로
+Output_path = os.path.join(current_dir, "sample/npy")  # 전처리 완료된 npy 파일 저장 경로
 folder_list = jp.get_folder_list(
     os.path.join(json_path, "Json")
 )  # 원본 json 저장위치의 선수폴더명 리스트업
@@ -46,4 +46,21 @@ if not os.path.exists(Output_path):
 
 # (1차년도) 선수명코드(파일이름)로 부터 y_train 라벨링 및 x_train tensor 생성
 # (2차년도) 각 슈팅파일별 스코어 점수로 y_train 라벨링  - json의 'score' 로 가정
-jp.process_files_in_folder(current_dir, folder_list, max_frame, Output_path)  # 1차년도
+
+# json 구조 확인
+for i in total_json_files:
+    jp.dimensional_check(i)
+
+jp.process_files_in_folder(current_dir, folder_list, 900, Output_path)  # 1차년도
+
+# 2차년도 테스트
+import numpy as np
+
+y_train = [8, 10, 10, 9, 9, 7, 8, 10, 10, 8, 8, 8, 9, 9, 10, 7, 9, 9, 8, 7, 8, 10, 9, 10, 
+ 9, 10, 8, 9, 8, 10, 8, 9, 7, 9, 10, 9, 9, 9, 9, 7, 10, 10, 9, 10, 8, 9, 8, 8, 
+ 8, 10, 9, 10, 10, 7, 9, 9, 7, 7, 9, 7, 8, 9, 9, 7, 9, 7, 9, 8, 7, 9, 7]
+ 
+y_train = np.array(y_train)
+
+# 파일 저장
+np.save(os.path.join(Output_path, f"y_train_46.npy"), y_train)

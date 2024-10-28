@@ -19,7 +19,7 @@ def convert_keypoints(keypoints):
         print("데이터구조 변환")
         return [[keypoint] for keypoint in keypoints]
 
-# json 구조 확인 및 변환파일 저장코드
+# json 구조 확인 및 변환 파일 저장 코드
 def dimensional_check(json_path):
     try:
         if not os.path.exists(json_path):
@@ -29,14 +29,16 @@ def dimensional_check(json_path):
         with open(json_path, "r") as f:
             data = json.load(f)
 
-                data["annotation"]["2d_keypoints"] = convert_keypoints(
-                    data["annotation"]["2d_keypoints"]
-                )
-            with open(json_path, "w") as f_out:
-                    json.dump(data, f_out, indent=4)
+        data["annotation"]["2d_keypoints"] = convert_keypoints(
+            data["annotation"]["2d_keypoints"]
+        )
+
+        with open(json_path, "w") as f_out:
+            json.dump(data, f_out, indent=4)
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
+
 
 # 폴더 내 항목 리스트 담는 코드
 def get_folder_list(directory):
@@ -113,7 +115,7 @@ def search_json_files(directory, frame):
     return json_files
 
 
-# 현재는 score가 없으므로 선수명 코드 추출
+# 현재는 score가 없으므로 선수명 코드 추출   (1차년도 파일)
 def extract_number_from_filename(filename):
     pattern = r"^(\d{2})_"
     match = re.match(pattern, filename)
@@ -123,7 +125,7 @@ def extract_number_from_filename(filename):
         return None
 
 
-# 현재는 score가 없으므로 선수명 코드 추출
+# 현재는 score가 없으므로 선수명 코드 추출  (1차년도 파일)
 def gen_y_train(json_files):
     filename = os.path.basename(json_files)
     label = extract_number_from_filename(filename)
@@ -194,8 +196,8 @@ def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
 # 원본 json 파일들을 리스트에 담고, 정규화&전처리 실행 및 npy 변환하여 저장한는 실행코드
 def process_files_in_folder(current_dir, folder_list, max_frame, Output_path):
     for i in folder_list:
-        json_files = search_json_files(os.path.join(current_dir, "DATA/Json", i), 900)
-
+        json_files = search_json_files(os.path.join(current_dir, "sample/Json", i), 900)
+        
         x_train = []
         y_train = []
 
