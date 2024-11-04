@@ -3,7 +3,7 @@ Project : "양궁 개인 최적동작 판별 알고리즘"
 Subject : "결과 시각화"
 Version : 1.1
 Started : 2023-12-04
-Updated : 2024-08-08
+Updated : 2024-11-04
 Language: Python
 Supervised: Jihoon, Park
 """
