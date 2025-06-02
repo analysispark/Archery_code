@@ -52,18 +52,31 @@ Data
     └── 46_999_091122_01_vis.mp4
 
 """
+import argparse
 import json
 import os
-import sys
+from pathlib import Path
 
 # Data folder list path
-Data_path = os.getcwd()
+Data_path = os.path.join(os.getcwd(), "Data")
+Record_path = os.path.join(Data_path, "record.json")
 Json_path = os.path.join(Data_path, "Jsons")
 Video_path = os.path.join(Data_path, "Videos")
 Npy_path = os.path.join(Data_path, "npy")
 Vis_path = os.path.join(Data_path, "visual_temp")
 
+parser = argparse.ArgumentParser(description="양궁 최적동작 솔루션")
+parser.add_argument("--name_code", requred=True, help="선수 코드")
+parser.add_argument("--select_video", required=True, help="분석할 비디오")
+
 import modules
 
 # 신규영상 체크
-modules.json_update_checker()
+
+# 2. 데이터베이스 확인(신규선수 일 경우 생성, 기존일 경우 불러오기)
+# 3. 수집된 영상 전처리 및 패턴 자료 누적
+
+# 3.1. 최소 자료 누적 시(유효 영상 1,000발) 최적동작 모델 학습 및 가중치 생성
+# 3.2. 선수 개인의 최적동작 가중치 모델 및 누적자료 저장
+# 4. 플랫폼에서 "분석" 버튼 활성화
+# 5. "분석" 버튼 클릭으로 선택한 영상의 슈팅분석이 진행되고, 시각화 제공

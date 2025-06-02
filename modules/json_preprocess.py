@@ -2,42 +2,58 @@
 
 import json
 import os
-import re
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.utils import to_categorical
 
 """
 원본 json으로 부터 데이터구조 변환 및 표준화 전처리 코드 모음
 """
 
-# json 구조 변환하는 코드
-def convert_keypoints(keypoints):
-    if isinstance(keypoints[0][0][0], list):
-        return keypoints
-    else:
-        print("데이터구조 변환")
-        return [[keypoint] for keypoint in keypoints]
 
-# json 구조 확인 및 변환 파일 저장 코드
-def dimensional_check(json_path):
-    try:
-        if not os.path.exists(json_path):
-            print(f"File {json_path} does not exist.")
-            return  
+def one_hot_encode_labels(labels, num_classes):
+    labels_array = np.array(labels)  # 정수 리스트를 numpy 배열로 변환
+    return to_categorical(labels_array, num_classes=num_classes)
 
-        with open(json_path, "r") as f:
-            data = json.load(f)
 
-        data["annotation"]["2d_keypoints"] = convert_keypoints(
-            data["annotation"]["2d_keypoints"]
-        )
+def load_npy(npy_path, number):
+    print(f"npy_path: {npy_path}")
+    print(os.path.join(npy_path, f"x_train_{number}.npy"))
+    x_npy = np.load(os.path.join(npy_path, f"x_train_{number}.npy"))
+    y_npy = np.load(os.path.join(npy_path, f"y_train_{number}.npy"))
+    print(f"Loaded array shape: x_train = {x_npy.shape}")
+    print(f"Loaded array shape: y_train = {y_npy.shape}")
+    return x_npy, y_npy
 
-        with open(json_path, "w") as f_out:
-            json.dump(data, f_out, indent=4)
 
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
+# # json 구조 변환하는 코드
+# def convert_keypoints(keypoints):
+#     if isinstance(keypoints[0][0][0], list):
+#         return keypoints
+#     else:
+#         print("데이터구조 변환")
+#         return [[keypoint] for keypoint in keypoints]
+#
+# # json 구조 확인 및 변환 파일 저장 코드
+# def dimensional_check(json_path):
+#     try:
+#         if not os.path.exists(json_path):
+#             print(f"File {json_path} does not exist.")
+#             return
+#
+#         with open(json_path, "r") as f:
+#             data = json.load(f)
+#
+#         data["annotation"]["2d_keypoints"] = convert_keypoints(
+#             data["annotation"]["2d_keypoints"]
+#         )
+#
+#         with open(json_path, "w") as f_out:
+#             json.dump(data, f_out, indent=4)
+#
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON: {e}")
 
 
 # 폴더 내 항목 리스트 담는 코드
@@ -50,26 +66,26 @@ def get_folder_list(directory):
         for item in items
         if not item.startswith(".") and os.path.isdir(os.path.join(directory, item))
     ]
-    print(folders)
     return folders
 
-# 단일 json 파일로 부터 프레임 길이 계산 (영상 편집을 하였기 때문에 실제 프레임 계산 필요)
-def find_max_frame(json_path):
 
-    max_frame = -1  # 최대값을 초기화합니다.
-
-    for json_file in json_path:
-        try:
-            with open(json_file, "r") as file:
-                json_data = json.load(file)
-                frame = int(len(json_data["annotation"]["2d_keypoints"]))
-                if frame > max_frame:
-                    max_frame = frame  # 최대값을 업데이트합니다.
-
-        except Exception as e:
-            print(f"Error processing file {json_file}: {e}")
-
-    return max_frame
+# # 단일 json 파일로 부터 프레임 길이 계산 (영상 편집을 하였기 때문에 실제 프레임 계산 필요)
+# def find_max_frame(json_path):
+#
+#     max_frame = -1  # 최대값을 초기화합니다.
+#
+#     for json_file in json_path:
+#         try:
+#             with open(json_file, "r") as file:
+#                 json_data = json.load(file)
+#                 frame = int(len(json_data["annotation"]["2d_keypoints"]))
+#                 if frame > max_frame:
+#                     max_frame = frame  # 최대값을 업데이트합니다.
+#
+#         except Exception as e:
+#             print(f"Error processing file {json_file}: {e}")
+#
+#     return max_frame
 
 
 # 여러 json 파일로부터 프레임 최대값 탐색
@@ -116,20 +132,28 @@ def search_json_files(directory, frame):
 
 
 # 현재는 score가 없으므로 선수명 코드 추출   (1차년도 파일)
-def extract_number_from_filename(filename):
-    pattern = r"^(\d{2})_"
-    match = re.match(pattern, filename)
-    if match:
-        return int(match.group(1))
-    else:
-        return None
+# def extract_number_from_filename(filename):
+#     pattern = r"^(\d{2})_"
+#     match = re.match(pattern, filename)
+#     if match:
+#         return int(match.group(1))
+#     else:
+#         return None
 
 
-# 현재는 score가 없으므로 선수명 코드 추출  (1차년도 파일)
-def gen_y_train(json_files):
-    filename = os.path.basename(json_files)
-    label = extract_number_from_filename(filename)
-    return label
+def extract_score(json_file):
+    try:
+        with open(json_file, "r") as f:
+            data = json.load(f)
+            score = data.get("info", {}).get("score", None)
+
+            if score is None or score == "None":
+                return 0
+            else:
+                return int(score)  # 필요에 따라 float(score) 가능
+    except Exception as e:
+        print(f"Error extracting score from {json_file}: {e}")
+        return 0
 
 
 # 원본 json 파일을 학습할 수 있도록 표준화 및 행열변환 코드
@@ -194,10 +218,10 @@ def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
 
 
 # 원본 json 파일들을 리스트에 담고, 정규화&전처리 실행 및 npy 변환하여 저장한는 실행코드
-def process_files_in_folder(current_dir, folder_list, max_frame, Output_path):
+def process_files_in_folder(json_dir, folder_list, max_frame, Output_path):
     for i in folder_list:
-        json_files = search_json_files(os.path.join(current_dir, "sample/Json", i), 900)
-        
+        json_files = search_json_files(os.path.join(json_dir, i), max_frame)
+
         x_train = []
         y_train = []
 
@@ -207,17 +231,15 @@ def process_files_in_folder(current_dir, folder_list, max_frame, Output_path):
 
                 if len(processed_data) > 0:
                     x_train.append(processed_data)
-                    y_train.append(gen_y_train(json_file))
+                    y_train.append(extract_score(json_file))
                 else:
-                    print(
-                        f"No valid data or score in file: {json_file}"
-                    )  # 현재는 score가 없음. 버전2에서 score 사용
+                    print(f"No valid data or score in file: {json_file}")
             except Exception as e:
                 print(f"Error processing file {json_file}: {e}")
 
         # 리스트를 numpy 배열로 변환
         x_train = np.array(x_train)
-        y_train = np.array(y_train)
+        y_train = np.array(y_train, dtype=np.int32)
 
         x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[2], -1))
 

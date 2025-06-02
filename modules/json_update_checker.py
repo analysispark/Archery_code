@@ -2,13 +2,18 @@ import json
 import os
 from pathlib import Path
 
-DATA_DIR = Path("./data/json")
-RECORD_PATH = Path("file_record.json")
+parent_path = Path.cwd().parent
+
+
+DATA_DIR = Path(parent_path, "Data/Jsons/")
+RECORD_PATH = Path(parent_path, "Data/record.json")
 
 
 # 👇 여기에 처리할 작업 함수 정의
 def process_new_json(folder_id, json_file_path):
     print(f"[{folder_id}] 처리 중: {json_file_path}")
+    print("Park_test: process_new_json 새로운 파일이 들어오면 수행할 것.")
+    print("json 파일 전처리")
     # 실제 처리할 코드 삽입
     # 예: json 파일 읽고 전처리 또는 분석 작업 수행
     pass
@@ -40,7 +45,10 @@ def scan_current_json_files(data_dir):
     return all_folders
 
 
-def check_and_process_new_files():
+def check_and_process_new_files(RECORD_PATH, DATA_DIR):
+    RECORD_PATH = Path(RECORD_PATH)
+    DATA_DIR = Path(DATA_DIR)
+
     prev_record = load_previous_record(RECORD_PATH)
     current_record = scan_current_json_files(DATA_DIR)
 
@@ -64,4 +72,4 @@ def check_and_process_new_files():
 
 
 if __name__ == "__main__":
-    check_and_process_new_files()
+    check_and_process_new_files(RECORD_PATH, DATA_DIR)
