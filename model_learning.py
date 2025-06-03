@@ -38,18 +38,7 @@ Vis_path = os.path.join(Data_path, "visual_temp")
 
 
 x_train, y_train = modules.load_npy(Npy_path, player_code)
-
-# 점수- Gold 변경
-old_labels = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-new_labels = [0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2]
-
-label_map = dict(zip(old_labels, new_labels))
-y_train = [label_map[label] for label in y_train]
-
 print(Counter(y_train))
-
-# y_train 자료 원핫인코딩
-y_train = modules.one_hot_encode_labels(y_train, 3)
 
 # array 배열로 변환
 x_train = np.array(x_train)

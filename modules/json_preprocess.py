@@ -151,8 +151,8 @@ def process_files_in_folder(json_dir, folder_list, max_frame, Output_path):
         for json_file in json_files:
             try:
                 score = extract_score(json_file)
-                if score == 100:  # score > 6
-                    print(f"Score < 6, skipping file: {json_file}")
+                if score < 5:
+                    print(f"Score < 5, skipping file: {json_file}")
                     continue
 
                 processed_data = transform_json(json_file, max_frame)
@@ -181,6 +181,16 @@ def process_files_in_folder(json_dir, folder_list, max_frame, Output_path):
         y_train = np.array(y_train, dtype=np.int32)
 
         x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[2], -1))
+
+        # 점수- Gold 변경
+        old_labels = [10, 9, 8, 7, 6, 5]
+        new_labels = [0, 0, 1, 1, 2, 2]
+
+        label_map = dict(zip(old_labels, new_labels))
+        y_train = [label_map[label] for label in y_train]
+
+        # y_train 자료 원핫인코딩
+        y_train = modules.one_hot_encode_labels(y_train, 3)
 
         # 파일 저장
         np.save(os.path.join(Output_path, f"x_train_{i}.npy"), x_train)
