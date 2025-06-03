@@ -3,3 +3,4 @@
 from .json_preprocess import *
 from .json_update_checker import *
 from .learning_model import *
+from .visual_preprocess import *

@@ -27,35 +27,6 @@ def load_npy(npy_path, number):
     return x_npy, y_npy
 
 
-# # json 구조 변환하는 코드
-# def convert_keypoints(keypoints):
-#     if isinstance(keypoints[0][0][0], list):
-#         return keypoints
-#     else:
-#         print("데이터구조 변환")
-#         return [[keypoint] for keypoint in keypoints]
-#
-# # json 구조 확인 및 변환 파일 저장 코드
-# def dimensional_check(json_path):
-#     try:
-#         if not os.path.exists(json_path):
-#             print(f"File {json_path} does not exist.")
-#             return
-#
-#         with open(json_path, "r") as f:
-#             data = json.load(f)
-#
-#         data["annotation"]["2d_keypoints"] = convert_keypoints(
-#             data["annotation"]["2d_keypoints"]
-#         )
-#
-#         with open(json_path, "w") as f_out:
-#             json.dump(data, f_out, indent=4)
-#
-#     except json.JSONDecodeError as e:
-#         print(f"Error decoding JSON: {e}")
-
-
 # 폴더 내 항목 리스트 담는 코드
 def get_folder_list(directory):
     # 디렉토리 내 항목 목록 가져오기
@@ -67,25 +38,6 @@ def get_folder_list(directory):
         if not item.startswith(".") and os.path.isdir(os.path.join(directory, item))
     ]
     return folders
-
-
-# # 단일 json 파일로 부터 프레임 길이 계산 (영상 편집을 하였기 때문에 실제 프레임 계산 필요)
-# def find_max_frame(json_path):
-#
-#     max_frame = -1  # 최대값을 초기화합니다.
-#
-#     for json_file in json_path:
-#         try:
-#             with open(json_file, "r") as file:
-#                 json_data = json.load(file)
-#                 frame = int(len(json_data["annotation"]["2d_keypoints"]))
-#                 if frame > max_frame:
-#                     max_frame = frame  # 최대값을 업데이트합니다.
-#
-#         except Exception as e:
-#             print(f"Error processing file {json_file}: {e}")
-#
-#     return max_frame
 
 
 # 여러 json 파일로부터 프레임 최대값 탐색
@@ -131,16 +83,6 @@ def search_json_files(directory, frame):
     return json_files
 
 
-# 현재는 score가 없으므로 선수명 코드 추출   (1차년도 파일)
-# def extract_number_from_filename(filename):
-#     pattern = r"^(\d{2})_"
-#     match = re.match(pattern, filename)
-#     if match:
-#         return int(match.group(1))
-#     else:
-#         return None
-
-
 def extract_score(json_file):
     try:
         with open(json_file, "r") as f:
@@ -156,7 +98,6 @@ def extract_score(json_file):
         return 0
 
 
-# 원본 json 파일을 학습할 수 있도록 표준화 및 행열변환 코드
 def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
     output_json = []
 
@@ -165,56 +106,38 @@ def transform_json(input_json, max_frame_length=900, keypoints_indices=None):
         keypoints_data = json_data["annotation"]["2d_keypoints"]
 
     if keypoints_indices is None:
-        keypoints_indices = [
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-        ]  # 기본 키포인트 인덱스 (left_shoulder 부터 right_wrist 까지)
+        keypoints_indices = [5, 6, 7, 8, 9, 10]  # left_shoulder ~ right_wrist
 
     num_keypoints = len(keypoints_indices)
 
     for frame in keypoints_data:
         new_frame = []
-        for keypoints in frame:
-            # 지정된 키포인트 인덱스만 추출
-            new_keypoints = [
-                [point[0], point[1]]
-                for i, point in enumerate(keypoints)
-                if i in keypoints_indices
-            ]
-            new_frame.extend(new_keypoints)
-        if new_frame:
-            flattened_data = np.array(new_frame).reshape(-1)
-            output_json.append(flattened_data)
-        else:
-            print(f"Warning: Empty frame data in file {input_json}")
+        for i in keypoints_indices:
+            if i < len(frame):
+                x, y, c = frame[i]
+                new_frame.extend([x, y])  # confidence 제외
+            else:
+                new_frame.extend([0, 0])  # 누락된 키포인트는 0으로 패딩
+        output_json.append(np.array(new_frame))
 
-    # 데이터를 (None, 2 * num_keypoints) 형태로 변환
     output_json = np.array(output_json)
 
-    # MinMaxScaler를 사용하여 데이터를 정규화
+    # 정규화
     scaler = MinMaxScaler()
-    output_json_reshaped = output_json.reshape(-1, num_keypoints * 2)
-    output_json_normalized = scaler.fit_transform(output_json_reshaped)
-    output_json_normalized = output_json_normalized.reshape(-1, num_keypoints * 2)
+    output_json_normalized = scaler.fit_transform(output_json)
 
-    # 입력 데이터에 따라 빈 프레임 추가
+    # 패딩
     if len(output_json_normalized) < max_frame_length:
-        padding_length = max_frame_length - len(output_json_normalized)
-        padding_frames = np.zeros((padding_length, num_keypoints * 2))
+        padding_len = max_frame_length - len(output_json_normalized)
+        padding = np.zeros((padding_len, num_keypoints * 2))
         output_json_normalized = np.concatenate(
-            (output_json_normalized, padding_frames), axis=0
+            [output_json_normalized, padding], axis=0
         )
+    else:
+        output_json_normalized = output_json_normalized[:max_frame_length]
 
-    # 최종 데이터를 (None, 1821, 2 * num_keypoints) 형태로 변환
-    output_json_normalized = output_json_normalized.reshape(
-        -1, max_frame_length, num_keypoints * 2
-    )
-
-    return output_json_normalized
+    # 최종 반환 형태
+    return output_json_normalized.reshape(1, max_frame_length, num_keypoints * 2)
 
 
 # 원본 json 파일들을 리스트에 담고, 정규화&전처리 실행 및 npy 변환하여 저장한는 실행코드
@@ -227,15 +150,31 @@ def process_files_in_folder(json_dir, folder_list, max_frame, Output_path):
 
         for json_file in json_files:
             try:
+                score = extract_score(json_file)
+                if score == 100:  # score > 6
+                    print(f"Score < 6, skipping file: {json_file}")
+                    continue
+
                 processed_data = transform_json(json_file, max_frame)
 
-                if len(processed_data) > 0:
-                    x_train.append(processed_data)
-                    y_train.append(extract_score(json_file))
-                else:
-                    print(f"No valid data or score in file: {json_file}")
+                # 빈 데이터 처리
+                if processed_data is None or len(processed_data) == 0:
+                    print(f"Empty or invalid processed data in file: {json_file}")
+                    continue
+
+                if processed_data.shape[0] == 0:
+                    print(f"Empty shape in processed data: {json_file}")
+                    continue
+
+                x_train.append(processed_data)
+                y_train.append(score)
+
             except Exception as e:
                 print(f"Error processing file {json_file}: {e}")
+
+        if len(x_train) == 0:
+            print(f"No data to save for folder {i}. Skipping save.")
+            continue
 
         # 리스트를 numpy 배열로 변환
         x_train = np.array(x_train)

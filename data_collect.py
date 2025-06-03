@@ -9,6 +9,7 @@ Supervised: Jihoon, Park
 """
 
 import os
+from pathlib import Path
 
 import modules
 
@@ -33,33 +34,33 @@ json 파일자료 저장경로의 형태가 "Data/Jsons" 폴더안에 각 선수
         DATA/npy/49_y_train.npy
 """
 
-# 신규영상 체크
-modules.check_and_process_new_files(Record_path, Json_path)
 
 # 선수별 Json 폴더번호 리스트로 저장
 folder_list = modules.get_folder_list(Json_path)
-
-# 필요없을 수 있음 - 25.06.03
-# # 900 frame 이하 파일만 저장
-# total_json_files = modules.search_json_files(json_path, frame=900)  # frame(900)
-# max_frame = modules.find_max_frame(total_json_files)
-
 
 # npy 저장 폴더가 없을 경우 생성
 if not os.path.exists(Npy_path):
     os.makedirs(Npy_path)
 
-# 각 슈팅파일별 스코어 점수로 y_train 라벨링  - json의 'score' 로 가정
 
-# 필요없을 수 있음 - 25.06.03
-# # json 구조 확인
-# for i in total_json_files:
-#     jp.dimensional_check(i)
-#
-# jp.process_files_in_folder(current_dir, folder_list, 900, Output_path)  # 1차년도
+# # 선수별 원본 json 파일들을 리스트에 담고, 정규화 & 전처리 실행 및 npy 변환
+# print("정규화 & 전처리 실행 및 npy 변환 완료")
 
+processed_files = modules.load_previous_record(Record_path)
+all_files = modules.scan_all_json_files(Path(Json_path))
 
-# 선수별 원본 json 파일들을 리스트에 담고, 정규화 & 전처리 실행 및 npy 변환
-print("최종 마지막 줄 시작")
-modules.process_files_in_folder(Json_path, folder_list, 900, Npy_path)
-print("마지막줄 완료")
+new_files = [f for f in all_files if f not in processed_files]
+
+if not new_files:
+    print("✅ 새로운 파일 없음.")
+else:
+    print(f"🆕 새로운 파일 {len(new_files)}개 발견!")
+    folder_list = [f.name for f in Path(Json_path).iterdir() if f.is_dir()]
+    modules.process_files_in_folder(Json_path, folder_list, 900, Npy_path)
+
+for rel_path in new_files:
+    folder_id, file_name = rel_path.split(os.sep)
+    file_path = Path(Json_path) / folder_id / file_name
+    processed_files.add(rel_path)
+
+modules.save_current_record(processed_files, Record_path)

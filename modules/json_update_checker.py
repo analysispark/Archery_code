@@ -4,72 +4,32 @@ from pathlib import Path
 
 parent_path = Path.cwd().parent
 
-
 DATA_DIR = Path(parent_path, "Data/Jsons/")
 RECORD_PATH = Path(parent_path, "Data/record.json")
 
 
-# 👇 여기에 처리할 작업 함수 정의
-def process_new_json(folder_id, json_file_path):
-    print(f"[{folder_id}] 처리 중: {json_file_path}")
-    print("Park_test: process_new_json 새로운 파일이 들어오면 수행할 것.")
-    print("json 파일 전처리")
-    # 실제 처리할 코드 삽입
-    # 예: json 파일 읽고 전처리 또는 분석 작업 수행
-    pass
-
-
 def load_previous_record(path):
+    path = Path(path)
     if path.exists():
         with open(path, "r") as f:
-            return json.load(f)
-    else:
-        return {}
+            return set(json.load(f))
+    return set()
 
 
-def save_current_record(record, path):
+def save_current_record(record_set, path):
     with open(path, "w") as f:
-        json.dump(record, f, indent=2)
-    print(f"📁 파일 리스트 저장 완료: {path}")
+        json.dump(sorted(list(record_set)), f, indent=2)
+    print(f"📄 파일 리스트 저장 완료: {path}")
 
 
-def scan_current_json_files(data_dir):
+def scan_all_json_files(data_dir):
     """
-    data/json/ 하위의 각 사람 폴더별로 JSON 파일 목록을 딕셔너리로 리턴
+    data/json/ 하위 모든 json 파일을 "48/48_01.json" 형식으로 리스트업
     """
-    all_folders = {}
+    file_list = []
     for folder in data_dir.iterdir():
         if folder.is_dir():
-            json_files = sorted([f.name for f in folder.glob("*.json") if f.is_file()])
-            all_folders[folder.name] = json_files
-    return all_folders
-
-
-def check_and_process_new_files(RECORD_PATH, DATA_DIR):
-    RECORD_PATH = Path(RECORD_PATH)
-    DATA_DIR = Path(DATA_DIR)
-
-    prev_record = load_previous_record(RECORD_PATH)
-    current_record = scan_current_json_files(DATA_DIR)
-
-    for folder_id, current_files in current_record.items():
-        prev_files = prev_record.get(folder_id, [])
-
-        # 새 파일 판별
-        new_files = set(current_files) - set(prev_files)
-
-        if not new_files:
-            print(f"[{folder_id}] ✅ 변화 없음")
-            continue
-
-        print(f"[{folder_id}] 🆕 새로운 파일 발견: {len(new_files)}개")
-        for file_name in sorted(new_files):
-            file_path = DATA_DIR / folder_id / file_name
-            process_new_json(folder_id, file_path)
-
-    # 모든 결과 저장
-    save_current_record(current_record, RECORD_PATH)
-
-
-if __name__ == "__main__":
-    check_and_process_new_files(RECORD_PATH, DATA_DIR)
+            for json_file in folder.glob("*.json"):
+                rel_path = os.path.join(folder.name, json_file.name)
+                file_list.append(rel_path)
+    return sorted(file_list)
