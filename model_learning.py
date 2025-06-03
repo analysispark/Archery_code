@@ -64,7 +64,7 @@ x_train, x_test, y_train, y_test = train_test_split(
 results = {}
 
 # 학습파라미터 설정 및 학습실행
-if y_train.size > 10:
+if y_train.size > 1000:
     # Train the BiGRU model
     model, history, test_loss, test_acc = modules.train_or_finetune_archery_model(
         player_code=player_code,
