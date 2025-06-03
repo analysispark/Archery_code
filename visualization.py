@@ -12,12 +12,13 @@ import os
 import sys
 
 import numpy as np
+import tensorflow as tf
 
 import modules
 
 # Data folder list path
 Data_path = os.path.join(os.getcwd(), "Data")
-Record_path = os.path.join(Data_path, "record.json")
+Model_path = os.path.join("models")
 Json_path = os.path.join(Data_path, "Jsons")
 Video_path = os.path.join(Data_path, "Videos")
 Vis_path = os.path.join(Data_path, "visual_temp")
@@ -44,14 +45,31 @@ npy_DATA = np.load(os.path.join(Npy_path, f"x_train_{CODE}.npy"))
 
 mean_coordinates = modules.calculate_mean_coordinates(npy_DATA)
 target_DATA = np.array(modules.transform_json(target_json))
-target_DATA = np.reshape(target_DATA, (900, 12))
+reshape_target_DATA = np.reshape(target_DATA, (900, 12))
 json_keypoints = modules.load_2d_keypoints(
     target_json
 )  # 수치가 표시될 관절포인트 위치 불러오기
 
+
+# 모델 예측
+model = tf.keras.models.load_model(os.path.join(Model_path, f"{CODE}_model.keras"))
+predict = model.predict(target_DATA)
+score_probs = {}
+labels = ["Good", "Normal", "Bad"]
+
+for idx, prob in enumerate(predict[0]):
+    score_label = labels[idx]
+    score_probs[score_label] = round(prob * 100, 2)
+
+
 output_path = os.path.join(Vis_path, f"{TARGET_FILE}_vis.mp4")
 modules.process_video(
-    target_video, output_path, json_keypoints, mean_coordinates, target_DATA
+    target_video,
+    output_path,
+    json_keypoints,
+    mean_coordinates,
+    reshape_target_DATA,
+    score_probs,
 )
 
 

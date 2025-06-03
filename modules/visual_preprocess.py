@@ -55,7 +55,12 @@ def get_color_by_ratio(ratio):
 
 # 시각화 동영상 처리 함수
 def process_video(
-    video_path, output_path, json_keypoints, mean_coordinates, sample_coordinates
+    video_path,
+    output_path,
+    json_keypoints,
+    mean_coordinates,
+    sample_coordinates,
+    score_probs,
 ):
     cap = cv2.VideoCapture(video_path)
 
@@ -63,11 +68,20 @@ def process_video(
         print(f"❌ Error opening video file: {video_path}")
         return
 
+    # model 예측치
+    max_label = max(score_probs, key=score_probs.get)
+    predict = {}
+    for label in ["Good", "Normal", "Bad"]:
+        color = (0, 255, 0) if label == max_label else (255, 255, 255)
+        predict[label] = (score_probs[label], color)
+
     # 동영상 저장 설정
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(output_path, fourcc, 30.0, (int(cap.get(3)), int(cap.get(4))))
 
     selected_keypoints = [5, 6, 7, 8, 9, 10]  # 시각화할 키포인트 인덱스
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -105,7 +119,7 @@ def process_video(
             keypoint = keypoint_data[kp_index]
             x_json, y_json, confidence = keypoint  # y, x 순서
 
-            if confidence > 0.5:
+            if confidence > 0.3:
                 x_json = int(x_json)
                 y_json = int(y_json)
 
@@ -139,6 +153,22 @@ def process_video(
                         1,
                         cv2.LINE_AA,
                     )
+
+                # 마지막 60프레임에 모델 정보 표시
+                if frame_number >= total_frames - 60:
+                    base_y = 30
+                    for idx, (label, (score, color)) in enumerate(predict.items()):
+                        text = f"{label}: {score}"
+                        cv2.putText(
+                            frame,
+                            text,
+                            (10, base_y + idx * 20),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.6,
+                            color,
+                            2,
+                            cv2.LINE_AA,
+                        )
 
         out.write(frame)
 
